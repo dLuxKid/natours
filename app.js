@@ -106,8 +106,8 @@ app
   .patch(updateTour)
   .delete(deleteTour);
 // app.get("/api/v1/tours/:id", getTourById);
-app.patch("/api/v1/tours/:id", updateTour);
-app.delete("/api/v1/tours/:id", deleteTour);
+// app.patch("/api/v1/tours/:id", updateTour);
+// app.delete("/api/v1/tours/:id", deleteTour);
 
 app.listen(3000, () => {
   console.log("We on some express juice");

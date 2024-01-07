@@ -30,21 +30,21 @@ class APIfeatures {
 
   limitFields() {
     if (this.queryString.fields) {
-      const fields = this.queryString.fields.split(",").join(" "); // e.g fields = 'name duration price'
-      this.query = this.query.select(fields); // includes the field in the response
+      const fields = this.queryString.fields.split(",").join(" ");
+      this.query = this.query.select(fields);
     } else {
-      this.query = this.query.select("-__v"); // the - exclude the __v variable from the response
+      this.query = this.query.select("-__v");
     }
 
     return this;
   }
 
-  async paginate() {
+  paginate() {
     const page = this.queryString.page * 1 || 1;
-    const limit = this.queryString.limit * 1 || 5;
+    const limit = this.queryString.limit * 1 || 12;
     const skip = (page - 1) * limit;
 
-    this.query = this.query.skip(skip).limit(limit); // the skip method removes the number of items in the results given as argument, while the limts return the number of items given as argument in the response
+    this.query = this.query.skip(skip).limit(limit);
 
     return this;
   }

@@ -11,10 +11,17 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 app.use(express.json());
-app.use(express.static("./public"));
+app.use(express.static(`${__dirname}/public`));
 
 // routes
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+
+app.all("*", (req, res, next) => {
+  res.status(404).json({
+    status: "fail",
+    message: ` cannot find ${req.originalUrl} on this server`,
+  });
+});
 
 module.exports = { app };

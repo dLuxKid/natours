@@ -15,5 +15,3 @@ main()
 app.listen(process.env.PORT || 3000, () => {
   console.log("We on some express juice");
 });
-
-module.exports = { mongoose };

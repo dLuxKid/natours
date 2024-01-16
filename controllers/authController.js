@@ -1,8 +1,11 @@
 const jwt = require("jsonwebtoken");
+const { promisify } = require("util");
+
 const User = require("../models/userModel");
+
 const catchAsync = require("../utils/catchAsyncErr");
 const AppError = require("../utils/appError");
-const { promisify } = require("util");
+const sendEmail = require("../utils/email");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -74,4 +77,54 @@ const protectRoute = catchAsync(async (req, res, next) => {
   next();
 });
 
-module.exports = { signup, login, protectRoute };
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You do not have permission to do this action", 403)
+      );
+    }
+    next();
+  };
+};
+
+const forgotPassword = catchAsync(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError("user does not exist", 404));
+  }
+
+  const resetToken = user.createResetToken();
+  await user.save({ validateBeforeSave: false });
+  const resetUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/api/v1/users/reset-password/${resetToken}`;
+
+  const text = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}. \n ignore if you didnt forget your password`;
+  const subject = "YOUR RESET TOKEN (Valid for 10mins)";
+  const email = user.email;
+
+  try {
+    await sendEmail({ text, subject, email });
+
+    res.status(200).json({
+      status: "success",
+      message: "reset token has been sent to mail",
+    });
+  } catch (error) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    return next(new AppError("Error sending email, try again later", 500));
+  }
+});
+
+const resetPassword = (req, res, next) => {};
+
+module.exports = {
+  signup,
+  login,
+  protectRoute,
+  restrictTo,
+  forgotPassword,
+  resetPassword,
+};

@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 
@@ -11,20 +13,24 @@ const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
 
+const createAndSendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+
+  res.status(statusCode).json({
+    status: "success",
+    token,
+    data: {
+      user,
+    },
+  });
+};
+
 const signup = catchAsync(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
 
   const newUser = await User.create({ name, email, password, passwordConfirm });
 
-  const token = signToken(newUser._id);
-
-  res.status(201).json({
-    status: "success",
-    token,
-    data: {
-      user: newUser,
-    },
-  });
+  createAndSendToken(newUser, 201, res);
 });
 
 const login = catchAsync(async (req, res, next) => {
@@ -41,12 +47,7 @@ const login = catchAsync(async (req, res, next) => {
     );
   }
 
-  const token = signToken(user._id);
-
-  res.status(200).json({
-    status: "success",
-    token,
-  });
+  createAndSendToken(user, 200, res);
 });
 
 const protectRoute = catchAsync(async (req, res, next) => {
@@ -118,7 +119,44 @@ const forgotPassword = catchAsync(async (req, res, next) => {
   }
 });
 
-const resetPassword = (req, res, next) => {};
+const resetPassword = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) return next(new AppError("this token is invalid or expired", 400));
+
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  await user.save();
+
+  createAndSendToken(user, 200, res);
+});
+
+const updatePassword = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id).select("+password");
+
+  const { oldPassword, newPassword, newPasswordConfirm } = req.body;
+
+  if (!(await user.isCorrectPassword(oldPassword, user.password)))
+    return next(new AppError("current password is wrong", 401));
+
+  user.password = newPassword;
+  user.passwordConfirm = newPasswordConfirm;
+
+  await user.save();
+
+  createAndSendToken(user, 200, res);
+});
 
 module.exports = {
   signup,
@@ -127,4 +165,6 @@ module.exports = {
   restrictTo,
   forgotPassword,
   resetPassword,
+  updatePassword,
+  createAndSendToken,
 };

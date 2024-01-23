@@ -1,4 +1,4 @@
-const mongoose  = require("mongoose");
+const mongoose = require("mongoose");
 const slugify = require("slugify");
 
 const tourSchema = new mongoose.Schema(
@@ -76,6 +76,31 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      // GeoJSON - to specify geospecific data
+      type: {
+        type: String,
+        default: "Point",
+        enum: ["Point"],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: "Point",
+          enum: ["Point"],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    guides: [{ type: mongoose.Schema.ObjectId, ref: "User" }], // this dictates we are recieving User refrence id as values in this entity
   },
   {
     toJSON: { virtuals: true },
@@ -87,11 +112,25 @@ tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 }); // they cannot be used in queries
 
+// virtual populate
+tourSchema.virtual("reviews", {
+  ref: "Review",
+  foreignField: "tour",
+  localField: "_id",
+});
+
 // document middleware runs before the .save() and .create()
 tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
+
+// embedding data in mongoose
+// tourSchema.pre("save", async function (next) {
+//   const guides = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(guides);
+//   next();
+// });
 
 // middleware runs after document has been saved or created
 tourSchema.post("save", function (doc, next) {
@@ -107,13 +146,21 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
+tourSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: "guides",
+    select: "-__v -passwordChangedAt",
+  });
+  next();
+});
+
 tourSchema.post(/^find/, function (docs, next) {
   console.log("query took", Date.now() - this.start, "miliseconds");
   next();
 });
 
 // aggregation middleware
-tourSchema.pre("aggreagte", function (next) {
+tourSchema.pre("aggregate", function (next) {
   this.pipeline().unshift({
     $match: { secretTour: { $ne: true } },
   });

@@ -7,14 +7,14 @@ const xss = require("xss-clean");
 const hpp = require("hpp");
 
 const AppError = require("./utils/appError");
-
+const { handleErr } = require("./controllers/errorController");
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
-const { handleErr } = require("./controllers/errorController");
+const reviewRouter = require("./routes/reviewRoute");
 
 const app = express();
 
-// creating our middleware stack
+// creating our global middleware stack
 app.use(helmet()); // set security http headers
 
 if (process.env.NODE_ENV === "development") {
@@ -50,6 +50,7 @@ app.use(express.static(`${__dirname}/public`)); // serving static files
 // routes
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/review", reviewRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`cannot find ${req.originalUrl} on this server`, 404));

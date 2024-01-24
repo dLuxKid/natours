@@ -6,7 +6,6 @@ const {
   getTourById,
   updateTour,
   deleteTour,
-  checkBody,
   popularTours,
   getTourStats,
   getMonthlyPlan,
@@ -18,18 +17,21 @@ const router = express.Router();
 
 router.use("/:tourId/reviews", reviewRouter);
 
-router.route("/").get(protectRoute, getAllTours).post(checkBody, addNewTour);
-router.route("/popular-tours").get(popularTours, getAllTours);
-router.route("/tour-stats").get(getTourStats);
-router.route("/monthly-plan/:year").get(getMonthlyPlan);
-router
-  .route("/:id")
-  .get(getTourById)
-  .patch(checkBody, updateTour)
-  .delete(protectRoute, restrictTo("admin", "lead-guide"), deleteTour);
+router.get("/", getAllTours);
+router.get("/popular-tours", popularTours, getAllTours);
+router.get("/tour-stats", getTourStats);
+router.get(
+  "/monthly-plan/:year",
+  restrictTo("admin", "lead-guide", "guide"),
+  getMonthlyPlan
+);
 
-// router
-//   .route("/:tourId/review")
-//   .post(protectRoute, restrictTo("user"), createReview);
+router.route("/:id").get(getTourById);
+
+router.use(protectRoute, restrictTo("admin", "lead-guide"));
+
+router.post("/", addNewTour);
+router.patch("/:id", updateTour);
+router.delete("/:id", deleteTour);
 
 module.exports = router;

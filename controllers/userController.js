@@ -2,17 +2,13 @@ const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsyncErr");
 const { createAndSendToken } = require("./authController");
+const { deleteOne, updateOne, getOne, getAll } = require("./handlerFactory");
 
-const getAllUsers = catchAsync(async (req, res) => {
-  const users = await User.find({});
-  res.status(200).json({
-    status: "success",
-    results: users.length,
-    data: {
-      users,
-    },
-  });
-});
+const getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+
+  next();
+};
 
 const updateUserDetails = catchAsync(async (req, res, next) => {
   if (req.body.password || req.body.passwordConfirm)
@@ -31,7 +27,7 @@ const updateUserDetails = catchAsync(async (req, res, next) => {
   createAndSendToken(updatedUser, 201, res);
 });
 
-const setUserInactive = catchAsync(async (req, res, next) => {
+const setUserInactive = catchAsync(async (req, res) => {
   await User.findByIdAndUpdate(req.user._id, { active: false });
 
   res.status(204).json({
@@ -40,21 +36,17 @@ const setUserInactive = catchAsync(async (req, res, next) => {
   });
 });
 
-const createUser = (req, res) => {};
-
-const getUser = (req, res) => {};
-
-const updateUser = (req, res) => {};
-
-const deleteUser = (req, res) => {};
+const getAllUsers = getAll(User);
+const getUser = getOne(User);
+const updateUser = updateOne(User);
+const deleteUser = deleteOne(User);
 
 module.exports = {
   getAllUsers,
-  createUser,
   getUser,
+  getMe,
   updateUser,
   deleteUser,
-  updateUser,
   updateUserDetails,
   setUserInactive,
 };

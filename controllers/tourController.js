@@ -1,8 +1,14 @@
 const Tour = require("../models/tourModel");
 
-const APIfeatures = require("../utils/apiFeatures");
-const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsyncErr");
+
+const {
+  deleteOne,
+  updateOne,
+  createOne,
+  getOne,
+  getAll,
+} = require("./handlerFactory");
 
 const checkBody = (req, res, next) => {
   const { name, price } = req.body;
@@ -22,78 +28,11 @@ const popularTours = async (req, res, next) => {
   next();
 };
 
-const getAllTours = catchAsync(async (req, res, next) => {
-  const features = new APIfeatures(Tour.find(), req.query)
-    .filter()
-    .sort()
-    .limitFields()
-    .paginate();
-
-  const tours = await features.query;
-
-  res.status(200).json({
-    status: "success",
-    requestedAt: req.requestTime,
-    results: tours.length,
-    data: { tours },
-  });
-});
-
-const getTourById = catchAsync(async (req, res, next) => {
-  const tour = await Tour.findById(req.params.id).populate("reviews");
-
-  if (!tour) {
-    return next(new AppError("this tour does not exist", 404));
-  }
-
-  res.status(200).json({
-    status: "success",
-    data: { tour },
-  });
-});
-
-const addNewTour = catchAsync(async (req, res, next) => {
-  const tour = await Tour.create(req.body);
-  res.status(201).json({
-    status: "success",
-    data: { tour },
-  });
-});
-
-const updateTour = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-
-  const tour = await Tour.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-
-  if (!tour) {
-    return next(new AppError("this tour does not exist", 404));
-  }
-
-  res.status(200).json({
-    status: "success",
-    data: {
-      message: "tour has been updated",
-      tour,
-    },
-  });
-});
-
-const deleteTour = catchAsync(async (req, res, next) => {
-  const id = req.params.id;
-  const tour = await Tour.findByIdAndDelete(id);
-
-  if (!tour) {
-    return next(new AppError("this tour does not exist", 404));
-  }
-
-  res.status(204).json({
-    status: "success",
-    data: null,
-  });
-});
+const getAllTours = getAll(Tour);
+const getTourById = getOne(Tour, { path: "reviews" });
+const addNewTour = createOne(Tour);
+const updateTour = updateOne(Tour);
+const deleteTour = deleteOne(Tour);
 
 const getTourStats = catchAsync(async (req, res, next) => {
   const stats = await Tour.aggregate([

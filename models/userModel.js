@@ -24,11 +24,6 @@ const userSchema = new mongoose.Schema({
     required: [true, "A password is required"],
     minLength: [8, "Your password must be 8 or more characters"],
     select: false,
-    // validate:{
-    //     validator:function(val){
-    //         return val
-    //     }
-    // }
   },
   role: {
     type: String,

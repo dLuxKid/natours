@@ -5,8 +5,12 @@ const dotenv = require("dotenv");
 dotenv.config({ path: "./config.env" });
 
 const Tour = require("../../models/tourModel");
+const User = require("../../models/userModel");
+const Review = require("../../models/reviewModel");
 
 const allTours = fs.readFileSync(`${__dirname}/tours.json`, "utf-8");
+const allUsers = fs.readFileSync(`${__dirname}/users.json`, "utf-8");
+const allReviews = fs.readFileSync(`${__dirname}/reviews.json`, "utf-8");
 
 async function main() {
   await mongoose.connect(process.env.DATABASE_STRING);
@@ -18,21 +22,29 @@ main()
 
 const importData = async () => {
   try {
-    await Tour.create(JSON.parse(allTours));
+    await Promise.all([
+      Tour.create(JSON.parse(allTours)),
+      User.create(JSON.parse(allUsers)),
+      Review.create(JSON.parse(allReviews)),
+    ]);
     console.log("Data successfully loaded");
     process.exit();
   } catch (error) {
-    console.log(err);
+    console.log(error);
   }
 };
 
 const deleteData = async () => {
   try {
-    await Tour.deleteMany();
+    await Promise.all([
+      Tour.deleteMany(),
+      User.deleteMany(),
+      Review.deleteMany(),
+    ]);
     console.log("Data successfully deleted");
     process.exit();
   } catch (error) {
-    console.log(err);
+    console.log(error);
   }
 };
 

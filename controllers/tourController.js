@@ -1,4 +1,5 @@
 const Tour = require("../models/tourModel");
+const AppError = require("../utils/appError");
 
 const catchAsync = require("../utils/catchAsyncErr");
 
@@ -101,6 +102,33 @@ const getMonthlyPlan = catchAsync(async (req, res, next) => {
   });
 });
 
+const getToursWithin = catchAsync(async (req, res) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(",");
+
+  if (!lat || !lng)
+    return next(
+      new AppError(
+        "Please provide latitude and longitude in format lat,lng",
+        400
+      )
+    );
+
+  const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
+
+  const tours = await Tour.find({
+    startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } },
+  });
+
+  res.status(200).json({
+    status: "success",
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
+});
+
 module.exports = {
   checkBody,
   addNewTour,
@@ -111,4 +139,5 @@ module.exports = {
   popularTours,
   getTourStats,
   getMonthlyPlan,
+  getToursWithin,
 };

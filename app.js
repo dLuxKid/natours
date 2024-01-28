@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
@@ -7,12 +8,18 @@ const xss = require("xss-clean");
 const hpp = require("hpp");
 
 const AppError = require("./utils/appError");
+
 const { handleErr } = require("./controllers/errorController");
+
 const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
+const viewRouter = require("./routes/viewRoutes");
 
 const app = express();
+
+app.set("view engine", "pug");
+app.set("views", path.join(__dirname, "views"));
 
 // creating our global middleware stack
 app.use(helmet()); // set security http headers
@@ -45,9 +52,10 @@ app.use(
 ); // prevent parameter pollution
 
 app.use(express.json({ limit: "10kb" })); // will not accept any data larger than 10kb as body
-app.use(express.static(`${__dirname}/public`)); // serving static files
+app.use(express.static(path.join(__dirname, "public"))); // serving static files
 
 // routes
+app.use("/", viewRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/review", reviewRouter);

@@ -1,11 +1,16 @@
 extends base
 include _reviewCard
 
+block append head
+  script(src="https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.js") 
+  link(rel="stylesheet", href="https://api.mapbox.com/mapbox-gl-js/v0.54.0/mapbox-gl.css")
+  //- script(src='/js/mapbox.js')
+
 block content 
   section.section-header
     .header__hero
       .header__hero-overlay &nbsp;
-      img.header__hero-img(src=`/img/{tour.imageCover}`, alt=`${tour.name}`)
+      img.header__hero-img(src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
 
     .heading-box
       h1.heading-primary
@@ -67,7 +72,7 @@ block content
         img.picture-box__img(src=`/img/tours/${img}`, alt=`${i+1}`, class=`picture-box__img--${i+1}`)
   
   section.section-map
-    #map
+    #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
   section.section-reviews
     .reviews
@@ -86,8 +91,8 @@ block content
     .cta
       .cta__img.cta__img--logo
         img(src='/img/logo-white.png', alt='Natours logo')
-      img.cta__img.cta__img--1(src=`/img/${tour.images[1]}`, alt='')
-      img.cta__img.cta__img--2(src=`/img/${tour.images[0]}`, alt='')
+      img.cta__img.cta__img--1(src=`/img/tours/${tour.images[1]}`, alt='')
+      img.cta__img.cta__img--2(src=`/img/tours/${tour.images[0]}`, alt='')
       .cta__content
         h2.heading-secondary What are you waiting for?
         p.cta__text= `${tour.duration} days. ${tour.locations.length} adventure. Infinite memories. Make it yours today!`

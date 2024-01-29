@@ -6,6 +6,7 @@ const helmet = require("helmet");
 const sanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
+const parser = require("cookie-parser");
 
 const AppError = require("./utils/appError");
 
@@ -52,6 +53,7 @@ app.use(
 ); // prevent parameter pollution
 
 app.use(express.json({ limit: "10kb" })); // will not accept any data larger than 10kb as body
+app.use(parser());
 app.use(express.static(path.join(__dirname, "public"))); // serving static files
 
 // routes

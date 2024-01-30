@@ -170,6 +170,23 @@ const updatePassword = catchAsync(async (req, res, next) => {
   createAndSendToken(user, 200, res);
 });
 
+const isLoggedIn = catchAsync(async (req, res, next) => {
+  if (req.cookies.jwt) {
+    const decoded = await promisify(jwt.verify)(
+      req.cookies.jwt,
+      process.env.JWT_SECRET
+    );
+
+    const user = await User.findById(decoded.id);
+
+    if (!user || user.isPasswordChangedAfter(decoded.iat)) return next();
+
+    res.locals.user = user;
+    return next();
+  }
+  next();
+});
+
 module.exports = {
   signup,
   login,
@@ -179,4 +196,5 @@ module.exports = {
   resetPassword,
   updatePassword,
   createAndSendToken,
+  isLoggedIn,
 };

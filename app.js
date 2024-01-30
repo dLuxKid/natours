@@ -68,4 +68,4 @@ app.all("*", (req, res, next) => {
 
 app.use(handleErr);
 
-module.exports = { app };
+module.exports = app;

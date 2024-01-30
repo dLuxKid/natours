@@ -19,8 +19,11 @@ const login = async (email, password) => {
 
     const data = await res.json();
 
-    console.log(data);
+    if (data.status === "success") {
+      alert("success", "Logged in succesfully");
+      window.location.href = "/";
+    }
   } catch (error) {
-    alert(error.message);
+    alert("fail", error.message);
   }
 };

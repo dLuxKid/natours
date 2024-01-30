@@ -60,6 +60,17 @@ const login = catchAsync(async (req, res, next) => {
   createAndSendToken(user, 200, res);
 });
 
+const logout = (req, res) => {
+  const cookieOptions = {
+    expires: new Date(Date.now() + 10),
+    httpOnly: true,
+  };
+
+  res.cookie("jwt", "loggedout", cookieOptions);
+
+  res.status(200).json({ status: "success" });
+};
+
 const protectRoute = catchAsync(async (req, res, next) => {
   let token = "";
   if (
@@ -190,6 +201,7 @@ const isLoggedIn = catchAsync(async (req, res, next) => {
 module.exports = {
   signup,
   login,
+  logout,
   protectRoute,
   restrictTo,
   forgotPassword,

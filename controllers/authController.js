@@ -98,6 +98,7 @@ const protectRoute = catchAsync(async (req, res, next) => {
     return next("User has changed password recently, please log in again", 401);
 
   req.user = user;
+  res.locals.user = user;
   next();
 });
 

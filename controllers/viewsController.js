@@ -39,4 +39,10 @@ const signup = (req, res) => {
   });
 };
 
-module.exports = { getOverview, getTour, login, signup };
+const getMe = (req, res) => {
+  res.status(200).render("account", {
+    title: "My account",
+  });
+};
+
+module.exports = { getOverview, getTour, login, signup, getMe };

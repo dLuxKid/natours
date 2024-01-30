@@ -7,6 +7,23 @@ document.querySelector(".form").addEventListener("submit", (e) => {
   login(email, password);
 });
 
+document
+  .querySelector(".nav__el--logout")
+  .addEventListener("click", async () => {
+    try {
+      const res = await fetch("http://localhost:8000/api/v1/users/logout");
+
+      const data = await res.json();
+
+      if (data.status === "success") {
+        alert("Logout successful");
+        window.location.reload();
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
 const login = async (email, password) => {
   try {
     const res = await fetch("http://localhost:8000/api/v1/users/login", {

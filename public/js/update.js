@@ -32,16 +32,22 @@ document.querySelector(".form-user-data").addEventListener("submit", (e) => {
 
 document
   .querySelector(".form-user-settings")
-  .addEventListener("submit", (e) => {
+  .addEventListener("submit", async (e) => {
     e.preventDefault();
+    document.querySelector(".btn--save-password").textContent = "Loading...";
 
     const oldPassword = document.getElementById("password-current").value;
     const newPassword = document.getElementById("password").value;
     const newPasswordConfirm =
       document.getElementById("password-confirm").value;
 
-    updateSettings(
+    await updateSettings(
       { oldPassword, newPassword, newPasswordConfirm },
       "password"
     );
+
+    document.getElementById("password-current").value = "";
+    document.getElementById("password").value = "";
+    document.getElementById("password-confirm").value = "";
+    document.querySelector(".btn--save-password").textContent = "Save Password";
   });

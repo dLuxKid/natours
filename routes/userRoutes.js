@@ -8,6 +8,7 @@ const {
   updateUserDetails,
   setUserInactive,
   getMe,
+  uploadUserPhoto,
 } = require("../controllers/userController");
 
 const {
@@ -32,7 +33,7 @@ router.patch("/reset-password/:token", resetPassword);
 router.use(protectRoute); // allows the rest of the routes to be protected instead of putting protectRoute in each of the routes
 
 router.get("/me", getMe, getUser);
-router.patch("/update-user", updateUserDetails);
+router.patch("/update-user", uploadUserPhoto, updateUserDetails);
 router.patch("/update-password", updatePassword);
 router.delete("/delete", setUserInactive);
 

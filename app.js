@@ -53,6 +53,7 @@ app.use(
 ); // prevent parameter pollution
 
 app.use(express.json({ limit: "10kb" })); // will not accept any data larger than 10kb as body
+app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(parser());
 app.use(express.static(path.join(__dirname, "public"))); // serving static files
 

@@ -1,4 +1,5 @@
 const Tour = require("../models/tourModel");
+const User = require("../models/userModel");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsyncErr");
 
@@ -45,4 +46,22 @@ const getMe = (req, res) => {
   });
 };
 
-module.exports = { getOverview, getTour, login, signup, getMe };
+const updateUserData = catchAsync(async (req, res, next) => {
+  const { email, name } = req.body;
+  if (!email || !name)
+    return next(
+      new AppError("Please provide email or name to be updated", 404)
+    );
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { name, email },
+    { new: true, runValidators: true }
+  );
+
+  res.status(201).render("account", {
+    title: "Your account",
+    user,
+  });
+});
+
+module.exports = { getOverview, getTour, login, signup, getMe, updateUserData };

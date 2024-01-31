@@ -11,15 +11,15 @@ const login = async (email, password) => {
     const data = await res.json();
 
     if (data.status === "success") {
-      alert("success", "Logged in succesfully");
+      alert("Logged in succesfully");
       window.location.href = "/";
     }
   } catch (error) {
-    alert("fail", error.message);
+    alert("Invalid email or password");
   }
 };
 
-document.querySelector(".form").addEventListener("submit", (e) => {
+document.querySelector(".form--login").addEventListener("submit", (e) => {
   e.preventDefault();
 
   const email = document.getElementById("email").value;

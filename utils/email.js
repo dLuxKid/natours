@@ -1,6 +1,6 @@
 const nodemailer = require("nodemailer");
 const pug = require("pug");
-const htmlToText = require("html-to-text");
+// const htmlToText = require("html-to-text");
 
 class Email {
   constructor(user, url) {
@@ -10,7 +10,7 @@ class Email {
     this.from = "Adetunji Marvellous <adetunjimarvellous09@gmail.com>";
   }
 
-  createTransport() {
+  newTransport() {
     if (process.env.NODE_ENV === "production") {
       return 1;
     }
@@ -26,27 +26,33 @@ class Email {
   }
 
   async send(template, subject) {
-    const html = pug.renderFile(
-      `${__dirname}/../../views/emails/${template}.pug`,
-      {
-        firstName: this.firstName,
-        url: this.url,
-        subject,
-      }
-    );
+    const html = pug.renderFile(`${__dirname}/../views/email/${template}.pug`, {
+      firstName: this.firstName,
+      url: this.url,
+      subject,
+    });
 
     const mailOptions = {
       from: this.from,
       to: this.to,
       subject,
       html,
-      text: htmlToText.fromString(html),
+      // text: htmlToText.fromString(html),
     };
 
-    await this.createTransport().sendEmail(mailOptions);
+    await this.newTransport().sendMail(mailOptions);
   }
 
   async sendWelcome() {
-    await this.send("Welcome", "Welcome to natours");
+    await this.send("welcome", "Welcome to natours");
+  }
+
+  async resetPassword() {
+    await this.send(
+      "passwordReset",
+      "YOUR PASSWORD RESET TOKEN (Valid for 10 minutes)"
+    );
   }
 }
+
+module.exports = Email;

@@ -7,7 +7,7 @@ const User = require("../models/userModel");
 
 const catchAsync = require("../utils/catchAsyncErr");
 const AppError = require("../utils/appError");
-const sendEmail = require("../utils/email");
+const Email = require("../utils/email");
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -39,6 +39,10 @@ const signup = catchAsync(async (req, res, next) => {
   const { name, email, password, passwordConfirm } = req.body;
 
   const newUser = await User.create({ name, email, password, passwordConfirm });
+
+  const url = `${req.protocol}://${req.get("host")}/me`;
+  console.log(url);
+  await new Email(newUser, url).sendWelcome();
 
   createAndSendToken(newUser, 201, res);
 });
@@ -125,12 +129,8 @@ const forgotPassword = catchAsync(async (req, res, next) => {
     "host"
   )}/api/v1/users/reset-password/${resetToken}`;
 
-  const text = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetUrl}. \n ignore if you didnt forget your password`;
-  const subject = "YOUR RESET TOKEN (Valid for 10mins)";
-  const email = user.email;
-
   try {
-    await sendEmail({ text, subject, email });
+    await new Email(user, resetUrl).resetPassword();
 
     res.status(200).json({
       status: "success",

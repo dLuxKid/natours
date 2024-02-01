@@ -11,6 +11,8 @@ const {
   getMonthlyPlan,
   getToursWithin,
   getDistances,
+  uploadTourImages,
+  resizeTourImages,
 } = require("../controllers/tourController");
 const { protectRoute, restrictTo } = require("../controllers/authController");
 const reviewRouter = require("./reviewRoutes");
@@ -39,7 +41,7 @@ router.route("/distances/:latlng/unit/:unit").get(getDistances);
 router.use(protectRoute, restrictTo("admin", "lead-guide"));
 
 router.post("/", addNewTour);
-router.patch("/:id", updateTour);
+router.patch("/:id", uploadTourImages, resizeTourImages, updateTour);
 router.delete("/:id", deleteTour);
 
 module.exports = router;

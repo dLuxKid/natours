@@ -13,9 +13,9 @@ const updateSettings = async (data, type) => {
       body: JSON.stringify(data),
     });
 
-    const data = await res.json();
+    const result = await res.json();
 
-    if (data.status === "success") alert("Updated details succesfully");
+    if (result.status === "success") alert("Updated details succesfully");
   } catch (error) {
     alert(error.message);
   }
@@ -26,8 +26,9 @@ document.querySelector(".form-user-data").addEventListener("submit", (e) => {
 
   const name = document.getElementById("name").value;
   const email = document.getElementById("email").value;
+  const photo = document.getElementById("photo").files[0];
 
-  updateSettings({ name, email }, "data");
+  updateSettings({ name, email, photo }, "data");
 });
 
 document

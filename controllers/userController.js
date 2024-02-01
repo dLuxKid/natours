@@ -1,4 +1,5 @@
 const multer = require("multer");
+const sharp = require("sharp");
 
 const User = require("../models/userModel");
 const AppError = require("../utils/appError");
@@ -6,15 +7,17 @@ const catchAsync = require("../utils/catchAsyncErr");
 const { createAndSendToken } = require("./authController");
 const { deleteOne, updateOne, getOne, getAll } = require("./handlerFactory");
 
-const multerStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/img/users");
-  },
-  filename: (req, file, cb) => {
-    const ext = file.mimetype.split("/")[1];
-    cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
-  },
-});
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, "public/img/users");
+//   },
+//   filename: (req, file, cb) => {
+//     const ext = file.mimetype.split("/")[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   },
+// });
+
+const multerStorage = multer.memoryStorage();
 
 const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith("image")) {
@@ -31,6 +34,19 @@ const upload = multer({
 
 const uploadUserPhoto = upload.single("photo");
 
+const resizeUserPhoto = (req, res, next) => {
+  if (!req.file) return next();
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  sharp(req.file.buffer)
+    .resize(500, 500, { fit: "fill" })
+    .toFormat("jpeg")
+    .jpeg({ quality: 90 })
+    .toFile(`public/imgs/users/${req.file.filename}`);
+
+  next();
+};
+
 const getMe = (req, res, next) => {
   req.params.id = req.user.id;
 
@@ -45,6 +61,8 @@ const updateUserDetails = catchAsync(async (req, res, next) => {
     email: req.body.email || req.user.email,
     name: req.body.name || req.user.name,
   };
+
+  if (req.file) user.photo = req.file.filename;
 
   const updatedUser = await User.findByIdAndUpdate(req.user._id, user, {
     new: true,
@@ -77,4 +95,5 @@ module.exports = {
   updateUserDetails,
   setUserInactive,
   uploadUserPhoto,
+  resizeUserPhoto,
 };

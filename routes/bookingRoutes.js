@@ -6,6 +6,7 @@ const {
   getBooking,
   updateBooking,
   deleteBooking,
+  getAllBookings,
 } = require("../controllers/bookingController");
 const { protectRoute, restrictTo } = require("../controllers/authController");
 

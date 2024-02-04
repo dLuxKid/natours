@@ -7,6 +7,7 @@ const sanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const hpp = require("hpp");
 const parser = require("cookie-parser");
+const cors = require("cors");
 
 const AppError = require("./utils/appError");
 
@@ -24,6 +25,8 @@ app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
 
 // creating our global middleware stack
+app.use(cors());
+app.options("*", cors());
 app.use(helmet()); // set security http headers
 
 if (process.env.NODE_ENV === "development") {
